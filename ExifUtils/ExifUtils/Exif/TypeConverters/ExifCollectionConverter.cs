@@ -32,95 +32,77 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace ExifUtils.Exif.TypeConverters
-{
-	internal class ExifCollectionConverter : CollectionConverter
-	{
-		#region Methods
+namespace ExifUtils.Exif.TypeConverters {
+    internal class ExifCollectionConverter : CollectionConverter {
+        #region Methods
 
-		public override PropertyDescriptorCollection GetProperties(
-			ITypeDescriptorContext context,
-			object value,
-			Attribute[] attributes)
-		{
-			PropertyDescriptor[] descriptors = null;
-			ExifPropertyCollection exifs = value as ExifPropertyCollection;
-			if (exifs != null)
-			{
-				descriptors = new PropertyDescriptor[exifs.Count];
-				int i = 0;
-				foreach (ExifProperty exif in (((ExifPropertyCollection)value)))
-				{
-					descriptors[i++] = new ExifCollectionConverter.ExifPropertyDescriptor(exif.Tag, exif.DisplayName);
-				}
-			}
-			return new PropertyDescriptorCollection(descriptors);
-		}
+        public override PropertyDescriptorCollection GetProperties(
+            ITypeDescriptorContext context,
+            object value,
+            Attribute[] attributes) {
+            PropertyDescriptor[] descriptors = null;
+            var exifs = value as ExifPropertyCollection;
+            if (exifs != null) {
+                descriptors = new PropertyDescriptor[exifs.Count];
+                var i = 0;
+                foreach (var exif in (((ExifPropertyCollection)value))) {
+                    descriptors[i++] = new ExifCollectionConverter.ExifPropertyDescriptor(exif.Tag, exif.DisplayName);
+                }
+            }
+            return new PropertyDescriptorCollection(descriptors);
+        }
 
-		public override bool GetPropertiesSupported(ITypeDescriptorContext context)
-		{
-			return true;
-		}
+        public override bool GetPropertiesSupported(ITypeDescriptorContext context) => true;
 
-		public override object ConvertTo(
-			ITypeDescriptorContext context,
-			CultureInfo culture,
-			object value,
-			Type destinationType)
-		{
-			if (value is ExifPropertyCollection && destinationType == typeof(string))
-			{
-				return ((ExifPropertyCollection)value).Count+" EXIF Properties";
-			}
+        public override object ConvertTo(
+            ITypeDescriptorContext context,
+            CultureInfo culture,
+            object value,
+            Type destinationType) {
+            if (value is ExifPropertyCollection && destinationType == typeof(string)) {
+                return ((ExifPropertyCollection)value).Count + " EXIF Properties";
+            }
 
-			return base.ConvertTo(context, culture, value, destinationType);
-		}
+            return base.ConvertTo(context, culture, value, destinationType);
+        }
 
-		#endregion Methods
+        #endregion Methods
 
-		#region Nested Types
+        #region Nested Types
 
-		// Nested Types
-		private class ExifPropertyDescriptor : System.ComponentModel.TypeConverter.SimplePropertyDescriptor
-		{
-			#region Fields
+        // Nested Types
+        private class ExifPropertyDescriptor : System.ComponentModel.TypeConverter.SimplePropertyDescriptor {
+            #region Fields
 
-			private ExifTag id;
+            private readonly ExifTag id;
 
-			#endregion Fields
+            #endregion Fields
 
-			#region Methods
+            #region Methods
 
-			public ExifPropertyDescriptor(ExifTag id, string label) :
-				base(typeof(ExifPropertyCollection), label, typeof(ExifProperty))
-			{
-				this.id = id;
-			}
+            public ExifPropertyDescriptor(ExifTag id, string label) :
+                base(typeof(ExifPropertyCollection), label, typeof(ExifProperty)) => this.id = id;
 
-			public override object GetValue(object instance)
-			{
-				if (instance is ExifPropertyCollection)
-				{
-					ExifPropertyCollection exifs = (ExifPropertyCollection)instance;
-					return exifs[this.id];
-				}
-				return null;
-			}
+            public override object GetValue(object instance) {
+                if (instance is ExifPropertyCollection) {
+                    var exifs = (ExifPropertyCollection)instance;
+                    return exifs[id];
+                }
+                return null;
+            }
 
-			public override void SetValue(object instance, object value)
-			{
-				if (instance is ExifPropertyCollection &&
-					value is ExifProperty)
-				{
-					ExifPropertyCollection exifs = (ExifPropertyCollection)instance;
-					exifs[this.id] = (ExifProperty)value;
-					this.OnValueChanged(instance, EventArgs.Empty);
-				}
-			}
+            public override void SetValue(object instance, object value) {
+                if (instance is ExifPropertyCollection &&
+                    value is ExifProperty) {
+                    var exifs = (ExifPropertyCollection)instance;
+                    exifs[id] = (ExifProperty)value;
+                    OnValueChanged(instance, EventArgs.Empty);
+                }
+            }
 
-			#endregion Methods
-		}
+            #endregion Methods
+        }
 
-		#endregion Nested Types
-	}
+        #endregion Nested Types
+    }
 }

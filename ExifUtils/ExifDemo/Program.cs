@@ -36,45 +36,40 @@ using ExifUtils.Exif;
 using ExifUtils.Exif.IO;
 using ExifUtils.Exif.TagValues;
 
-namespace ExifDemo
-{
-	class Program
-	{
-		static void Main(string[] args)
-		{
-			// choose an image
-			Console.Write("Enter image load path: ");
-			string imagePath = Console.ReadLine();
-			int lastDot = imagePath.LastIndexOf('.');
-			Console.WriteLine();
+namespace ExifDemo {
+    internal class Program {
+        private static void Main(string[] args) {
+            // choose an image
+            Console.Write("Enter image load path: ");
+            var imagePath = Console.ReadLine();
+            var lastDot = imagePath.LastIndexOf('.');
+            Console.WriteLine();
 
-			//----------------------------------------------
+            //----------------------------------------------
 
-			// minimally loads image and closes it
-			ExifPropertyCollection properties = ExifReader.GetExifData(imagePath);
+            // minimally loads image and closes it
+            var properties = ExifReader.GetExifData(imagePath);
 
-			string dumpPath = imagePath.Substring(0, lastDot)+"_EXIF"+imagePath.Substring(lastDot)+".txt";
-			using (StreamWriter dumpWriter = File.CreateText(dumpPath))
-			{
-				// dump properties to console
-				foreach (ExifProperty property in properties)
-				{
-					dumpWriter.WriteLine("{0}.{1}: \"{2}\"",
-						property.Tag.GetType().Name,
-						property.Tag,
-						property.DisplayName);
-					dumpWriter.WriteLine("{0}: {1}",
-						GetPropertyTypeName(property.Value),
-						property.Value);
-					dumpWriter.WriteLine("\"{0}\"",
-						property.DisplayValue);
-					dumpWriter.WriteLine();
-				}
-			}
+            var dumpPath = imagePath.Substring(0, lastDot) + "_EXIF" + imagePath.Substring(lastDot) + ".txt";
+            using (var dumpWriter = File.CreateText(dumpPath)) {
+                // dump properties to console
+                foreach (var property in properties) {
+                    dumpWriter.WriteLine("{0}.{1}: \"{2}\"",
+                        property.Tag.GetType().Name,
+                        property.Tag,
+                        property.DisplayName);
+                    dumpWriter.WriteLine("{0}: {1}",
+                        GetPropertyTypeName(property.Value),
+                        property.Value);
+                    dumpWriter.WriteLine("\"{0}\"",
+                        property.DisplayValue);
+                    dumpWriter.WriteLine();
+                }
+            }
 
-			Console.WriteLine();
+            Console.WriteLine();
 
-			//----------------------------------------------
+            //----------------------------------------------
 #if TEST
 			string outputPath = imagePath.Substring(0, lastDot)+"_COPYRIGHT_LOREM_IPSUM"+imagePath.Substring(lastDot);
 			Console.WriteLine("Adding dummy copyright to image and saving to:\r\n\t"+outputPath);
@@ -107,59 +102,49 @@ namespace ExifDemo
 				Console.WriteLine();
 			}
 #endif
-		}
+        }
 
-		private static string GetPropertyTypeName(object value)
-		{
-			if (value == null)
-			{
-				return "null";
-			}
+        private static string GetPropertyTypeName(object value) {
+            if (value == null) {
+                return "null";
+            }
 
-			Type type = value.GetType();
+            var type = value.GetType();
 
-			return GetPropertyTypeName(type, type.IsArray ? ((Array)value).Length : 0);
-		}
+            return GetPropertyTypeName(type, type.IsArray ? ((Array)value).Length : 0);
+        }
 
-		private static string GetPropertyTypeName(Type type, int length)
-		{
-			if (type == null)
-			{
-				return "null";
-			}
+        private static string GetPropertyTypeName(Type type, int length) {
+            if (type == null) {
+                return "null";
+            }
 
-			if (type.IsArray || type.HasElementType)
-			{
-				return GetPropertyTypeName(type.GetElementType(), 0)+'['+length+']';
-			}
+            if (type.IsArray || type.HasElementType) {
+                return GetPropertyTypeName(type.GetElementType(), 0) + '[' + length + ']';
+            }
 
-			if (type.IsGenericType)
-			{
-				string name = type.Name;
-				if (name.IndexOf('`') >= 0)
-				{
-					name = name.Substring(0, name.IndexOf('`'));
-				}
-				name += '<';
-				Type[] args = type.GetGenericArguments();
-				for (int i=0; i<args.Length; i++)
-				{
-					if (i > 0)
-					{
-						name += ',';
-					}
-					name += args[i].Name;
-				}
-				name += '>';
-				return name;
-			}
+            if (type.IsGenericType) {
+                var name = type.Name;
+                if (name.IndexOf('`') >= 0) {
+                    name = name.Substring(0, name.IndexOf('`'));
+                }
+                name += '<';
+                var args = type.GetGenericArguments();
+                for (var i = 0; i < args.Length; i++) {
+                    if (i > 0) {
+                        name += ',';
+                    }
+                    name += args[i].Name;
+                }
+                name += '>';
+                return name;
+            }
 
-			if (type.IsEnum)
-			{
-				return type.Name+':'+Enum.GetUnderlyingType(type).Name;
-			}
+            if (type.IsEnum) {
+                return type.Name + ':' + Enum.GetUnderlyingType(type).Name;
+            }
 
-			return type.Name;
-		}
-	}
+            return type.Name;
+        }
+    }
 }

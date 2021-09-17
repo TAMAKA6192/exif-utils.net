@@ -34,95 +34,80 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 
-namespace ExifUtils.Exif.IO
-{
-	/// <summary>
-	/// Utility class for reading EXIF data 
-	/// </summary>
-	public static class ExifReader
-	{
-		#region Methods
+namespace ExifUtils.Exif.IO {
+    /// <summary>
+    /// Utility class for reading EXIF data 
+    /// </summary>
+    public static class ExifReader {
+        #region Methods
 
-		/// <summary>
-		/// Creates a ExifPropertyCollection from an image file path.
-		/// Minimally loads image only enough to get PropertyItems.
-		/// </summary>
-		/// <param name="imagePath"></param>
-		/// <param name="exifTags">filter of EXIF tags to include</param>
-		/// <returns>Collection of ExifProperty items</returns>
-		public static ExifPropertyCollection GetExifData(string imagePath, params ExifTag[] exifTags)
-		{
-			return ExifReader.GetExifData(imagePath, (ICollection<ExifTag>)exifTags);
-		}
+        /// <summary>
+        /// Creates a ExifPropertyCollection from an image file path.
+        /// Minimally loads image only enough to get PropertyItems.
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <param name="exifTags">filter of EXIF tags to include</param>
+        /// <returns>Collection of ExifProperty items</returns>
+        public static ExifPropertyCollection GetExifData(string imagePath, params ExifTag[] exifTags) => ExifReader.GetExifData(imagePath, (ICollection<ExifTag>)exifTags);
 
-		/// <summary>
-		/// Creates a ExifPropertyCollection from an image file path.
-		/// Minimally loads image only enough to get PropertyItems.
-		/// </summary>
-		/// <param name="imagePath"></param>
-		/// <param name="exifTags">collection of EXIF tags to include</param>
-		/// <returns>Collection of ExifProperty items</returns>
-		public static ExifPropertyCollection GetExifData(string imagePath, ICollection<ExifTag> exifTags)
-		{
-			PropertyItem[] propertyItems;
+        /// <summary>
+        /// Creates a ExifPropertyCollection from an image file path.
+        /// Minimally loads image only enough to get PropertyItems.
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <param name="exifTags">collection of EXIF tags to include</param>
+        /// <returns>Collection of ExifProperty items</returns>
+        public static ExifPropertyCollection GetExifData(string imagePath, ICollection<ExifTag> exifTags) {
+            PropertyItem[] propertyItems;
 
-			// minimally load image
-			Image image;
-			using (ExifReader.LoadImage(imagePath, out image))
-			{
-				using (image)
-				{
-					propertyItems = image.PropertyItems;
-				}
-			}
+            // minimally load image
+            using (ExifReader.LoadImage(imagePath, out var image)) {
+                using (image) {
+                    propertyItems = image.PropertyItems;
+                }
+            }
 
-			return new ExifPropertyCollection(propertyItems, exifTags);
-		}
+            return new ExifPropertyCollection(propertyItems, exifTags);
+        }
 
-		/// <summary>
-		/// Creates a ExifPropertyCollection from the PropertyItems of a Bitmap.
-		/// </summary>
-		/// <param name="image"></param>
-		/// <param name="exifTags">filter of EXIF tags to include</param>
-		/// <returns></returns>
-		public static ExifPropertyCollection GetExifData(Image image, params ExifTag[] exifTags)
-		{
-			return ExifReader.GetExifData(image, (ICollection<ExifTag>)exifTags);
-		}
+        /// <summary>
+        /// Creates a ExifPropertyCollection from the PropertyItems of a Bitmap.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="exifTags">filter of EXIF tags to include</param>
+        /// <returns></returns>
+        public static ExifPropertyCollection GetExifData(Image image, params ExifTag[] exifTags) => ExifReader.GetExifData(image, (ICollection<ExifTag>)exifTags);
 
-		/// <summary>
-		/// Creates a ExifPropertyCollection from the PropertyItems of a Bitmap.
-		/// </summary>
-		/// <param name="image"></param>
-		/// <param name="exifTags">filter of EXIF tags to include</param>
-		/// <returns></returns>
-		public static ExifPropertyCollection GetExifData(Image image, ICollection<ExifTag> exifTags)
-		{
-			if (image == null)
-			{
-				throw new NullReferenceException("image");
-			}
+        /// <summary>
+        /// Creates a ExifPropertyCollection from the PropertyItems of a Bitmap.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="exifTags">filter of EXIF tags to include</param>
+        /// <returns></returns>
+        public static ExifPropertyCollection GetExifData(Image image, ICollection<ExifTag> exifTags) {
+            if (image == null) {
+                throw new NullReferenceException("image");
+            }
 
-			return new ExifPropertyCollection(image.PropertyItems, exifTags);
-		}
+            return new ExifPropertyCollection(image.PropertyItems, exifTags);
+        }
 
-		#endregion Methods
+        #endregion Methods
 
-		#region Utility Methods
+        #region Utility Methods
 
-		/// <summary>
-		/// Minimally load image without verifying image data.
-		/// </summary>
-		/// <param name="imagePath"></param>
-		/// <param name="image">the loaded image object</param>
-		/// <returns>the stream object to dispose of when finished</returns>
-		internal static IDisposable LoadImage(string imagePath, out Image image)
-		{
-			FileStream stream = new FileStream(imagePath, FileMode.Open, FileAccess.Read);
-			image = Image.FromStream(stream, false, false);
-			return stream;
-		}
+        /// <summary>
+        /// Minimally load image without verifying image data.
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <param name="image">the loaded image object</param>
+        /// <returns>the stream object to dispose of when finished</returns>
+        internal static IDisposable LoadImage(string imagePath, out Image image) {
+            var stream = new FileStream(imagePath, FileMode.Open, FileAccess.Read);
+            image = Image.FromStream(stream, false, false);
+            return stream;
+        }
 
-		#endregion Utility Methods
-	}
+        #endregion Utility Methods
+    }
 }

@@ -29,296 +29,248 @@
 #endregion License
 
 using System;
-using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
 
 using ExifUtils.Exif.TypeConverters;
 
-namespace ExifUtils.Exif
-{
-	/// <summary>
-	/// Collection of ExifProperty items
-	/// </summary>
-	[Serializable]
-	[TypeConverter(typeof(ExifCollectionConverter))]
-	public class ExifPropertyCollection : ICollection<ExifProperty>, ICollection
-	{
-		#region Fields
+namespace ExifUtils.Exif {
+    /// <summary>
+    /// Collection of ExifProperty items
+    /// </summary>
+    [Serializable]
+    [TypeConverter(typeof(ExifCollectionConverter))]
+    public class ExifPropertyCollection : ICollection<ExifProperty>, ICollection {
+        #region Fields
 
-		private SortedDictionary<Int32, ExifProperty> items = new SortedDictionary<int, ExifProperty>();
+        private readonly SortedDictionary<int, ExifProperty> items = new SortedDictionary<int, ExifProperty>();
 
-		#endregion Fields
+        #endregion Fields
 
-		#region Init
+        #region Init
 
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		public ExifPropertyCollection()
-		{
-		}
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        public ExifPropertyCollection() {
+        }
 
-		/// <summary>
-		/// Creates a ExifPropertyCollection from a collection of ExifProperties.
-		/// Also works as a copy constructor.
-		/// </summary>
-		/// <param name="properties"></param>
-		public ExifPropertyCollection(IEnumerable<ExifProperty> properties)
-		{
-			if (properties == null)
-			{
-				return;
-			}
+        /// <summary>
+        /// Creates a ExifPropertyCollection from a collection of ExifProperties.
+        /// Also works as a copy constructor.
+        /// </summary>
+        /// <param name="properties"></param>
+        public ExifPropertyCollection(IEnumerable<ExifProperty> properties) {
+            if (properties == null) {
+                return;
+            }
 
-			// add all the Exif properties
-			foreach (ExifProperty property in properties)
-			{
-				this.Add(property);
-			}
-		}
+            // add all the Exif properties
+            foreach (var property in properties) {
+                Add(property);
+            }
+        }
 
-		/// <summary>
-		/// Creates a ExifPropertyCollection from a collection of PropertyItems.
-		/// </summary>
-		/// <param name="propertyItems"></param>
-		/// <param name="exifTags">filter of EXIF tags to include</param>
-		public ExifPropertyCollection(IEnumerable<PropertyItem> propertyItems, params ExifTag[] exifTags)
-			: this(propertyItems, (ICollection<ExifTag>)exifTags)
-		{
-		}
+        /// <summary>
+        /// Creates a ExifPropertyCollection from a collection of PropertyItems.
+        /// </summary>
+        /// <param name="propertyItems"></param>
+        /// <param name="exifTags">filter of EXIF tags to include</param>
+        public ExifPropertyCollection(IEnumerable<PropertyItem> propertyItems, params ExifTag[] exifTags)
+            : this(propertyItems, (ICollection<ExifTag>)exifTags) {
+        }
 
-		/// <summary>
-		/// Creates a ExifPropertyCollection from a collection of PropertyItems only including explicitly named ExifTags.
-		/// </summary>
-		/// <param name="propertyItems"></param>
-		/// <param name="exifTags">filter of EXIF tags to include</param>
-		public ExifPropertyCollection(IEnumerable<PropertyItem> propertyItems, ICollection<ExifTag> exifTags)
-		{
-			if (propertyItems == null)
-			{
-				return;
-			}
+        /// <summary>
+        /// Creates a ExifPropertyCollection from a collection of PropertyItems only including explicitly named ExifTags.
+        /// </summary>
+        /// <param name="propertyItems"></param>
+        /// <param name="exifTags">filter of EXIF tags to include</param>
+        public ExifPropertyCollection(IEnumerable<PropertyItem> propertyItems, ICollection<ExifTag> exifTags) {
+            if (propertyItems == null) {
+                return;
+            }
 
-			// copy all the Exif properties
-			foreach (PropertyItem property in propertyItems)
-			{
-				if (exifTags != null && exifTags.Count > 0 &&
-					(!Enum.IsDefined(typeof(ExifTag), property.Id) || !exifTags.Contains((ExifTag)property.Id)))
-				{
-					// filter those not in the set
-					continue;
-				}
+            // copy all the Exif properties
+            foreach (var property in propertyItems) {
+                if (exifTags != null && exifTags.Count > 0 &&
+                    (!Enum.IsDefined(typeof(ExifTag), property.Id) || !exifTags.Contains((ExifTag)property.Id))) {
+                    // filter those not in the set
+                    continue;
+                }
 
-				if (property.Value != null)
-				{
-					this.Add(new ExifProperty(property));
-				}
-			}
-		}
+                if (property.Value != null) {
+                    Add(new ExifProperty(property));
+                }
+            }
+        }
 
-		#endregion Init
+        #endregion Init
 
-		#region Properties
+        #region Properties
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="tagID"></param>
-		/// <returns></returns>
-		public ExifProperty this[ExifTag tagID]
-		{
-			get
-			{
-				if (!this.items.ContainsKey((int)tagID))
-				{
-					ExifProperty property = new ExifProperty();
-					property.Tag = tagID;
-					property.Type = ExifDataTypeAttribute.GetExifType(tagID);
-					this.items[(int)tagID] = property;
-				}
-				return this.items[(int)tagID];
-			}
-			set { this.items[(int)tagID] = value; }
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tagID"></param>
+        /// <returns></returns>
+        public ExifProperty this[ExifTag tagID] {
+            get {
+                if (!items.ContainsKey((int)tagID)) {
+                    var property = new ExifProperty {
+                        Tag = tagID,
+                        Type = ExifDataTypeAttribute.GetExifType(tagID)
+                    };
+                    items[(int)tagID] = property;
+                }
+                return items[(int)tagID];
+            }
+            set => items[(int)tagID] = value;
+        }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="index"></param>
-		/// <returns></returns>
-		/// <remarks>
-		/// Warning: inefficient, used only for serialization
-		/// </remarks>
-		public ExifProperty this[int index]
-		{
-			get
-			{
-				int[] keys = new int[this.items.Keys.Count];
-				this.items.Keys.CopyTo(keys, 0);
-				return this.items[keys[index]];
-			}
-			set { throw new NotSupportedException("This operation is not supported."); }
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Warning: inefficient, used only for serialization
+        /// </remarks>
+        public ExifProperty this[int index] {
+            get {
+                var keys = new int[items.Keys.Count];
+                items.Keys.CopyTo(keys, 0);
+                return items[keys[index]];
+            }
+            set => throw new NotSupportedException("This operation is not supported.");
+        }
 
-		#endregion Properties
+        #endregion Properties
 
-		#region Methods
+        #region Methods
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="tag"></param>
-		/// <returns></returns>
-		public bool Remove(ExifTag tag)
-		{
-			if (!this.items.ContainsKey((int)tag))
-				return false;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public bool Remove(ExifTag tag) {
+            if (!items.ContainsKey((int)tag)) {
+                return false;
+            }
 
-			this.items.Remove((int)tag);
-			return true;
-		}
+            items.Remove((int)tag);
+            return true;
+        }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="tag"></param>
-		/// <returns></returns>
-		public bool Contains(ExifTag tag)
-		{
-			return this.items.ContainsKey((int)tag);
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public bool Contains(ExifTag tag) => items.ContainsKey((int)tag);
 
-		#endregion Methods
+        #endregion Methods
 
-		#region ICollection Members
+        #region ICollection Members
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="array"></param>
-		/// <param name="index"></param>
-		public void CopyTo(Array array, int index)
-		{
-			((ICollection)this.items).CopyTo(array, index);
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="index"></param>
+        public void CopyTo(Array array, int index) => ((ICollection)items).CopyTo(array, index);
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public int Count
-		{
-			get { return ((ICollection)this.items).Count; }
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Count => ((ICollection)items).Count;
 
-		bool ICollection.IsSynchronized
-		{
-			get { return ((ICollection)this.items).IsSynchronized; }
-		}
+        bool ICollection.IsSynchronized => ((ICollection)items).IsSynchronized;
 
-		object ICollection.SyncRoot
-		{
-			get { return ((ICollection)this.items).SyncRoot; }
-		}
+        object ICollection.SyncRoot => ((ICollection)items).SyncRoot;
 
-		#endregion ICollection Members
+        #endregion ICollection Members
 
-		#region IEnumerable Members
+        #region IEnumerable Members
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return ((IEnumerable)this.items.Values).GetEnumerator();
-		}
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)items.Values).GetEnumerator();
 
-		#endregion IEnumerable Members
+        #endregion IEnumerable Members
 
-		#region ICollection<ExifProperty> Members
+        #region ICollection<ExifProperty> Members
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="item"></param>
-		public void Add(ExifProperty item)
-		{
-			if (item == null)
-				return;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        public void Add(ExifProperty item) {
+            if (item == null) {
+                return;
+            }
 
-			if (item.Value == null)
-			{
-				if (this.Contains(item.Tag))
-					this.Remove(item.Tag);
-				return;
-			}
+            if (item.Value == null) {
+                if (Contains(item.Tag)) {
+                    Remove(item.Tag);
+                }
 
-			this.items[item.ID] = item;
-		}
+                return;
+            }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public void Clear()
-		{
-			this.items.Clear();
-		}
+            items[item.ID] = item;
+        }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="item"></param>
-		/// <returns></returns>
-		public bool Contains(ExifProperty item)
-		{
-			return this.items.ContainsValue(item);
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Clear() => items.Clear();
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="array"></param>
-		/// <param name="index"></param>
-		public void CopyTo(ExifProperty[] array, int index)
-		{
-			this.items.Values.CopyTo(array, index);
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool Contains(ExifProperty item) => items.ContainsValue(item);
 
-		/// <summary>
-		/// 
-		/// </summary>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool IsReadOnly
-		{
-			get { return ((ICollection<KeyValuePair<int,ExifProperty>>)this.items).IsReadOnly; }
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="index"></param>
+        public void CopyTo(ExifProperty[] array, int index) => items.Values.CopyTo(array, index);
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="item"></param>
-		/// <returns></returns>
-		public bool Remove(ExifProperty item)
-		{
-			if (!this.items.ContainsKey(item.ID))
-				return false;
+        /// <summary>
+        /// 
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public bool IsReadOnly => ((ICollection<KeyValuePair<int, ExifProperty>>)items).IsReadOnly;
 
-			this.items.Remove(item.ID);
-			return true;
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool Remove(ExifProperty item) {
+            if (!items.ContainsKey(item.ID)) {
+                return false;
+            }
 
-		#endregion ICollection<ExifProperty> Members
+            items.Remove(item.ID);
+            return true;
+        }
 
-		#region IEnumerable<ExifProperty> Members
+        #endregion ICollection<ExifProperty> Members
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerator<ExifProperty> GetEnumerator()
-		{
-			return ((IEnumerable<ExifProperty>)this.items.Values).GetEnumerator();
-		}
+        #region IEnumerable<ExifProperty> Members
 
-		#endregion IEnumerable<ExifProperty> Members
-	}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<ExifProperty> GetEnumerator() => ((IEnumerable<ExifProperty>)items.Values).GetEnumerator();
+
+        #endregion IEnumerable<ExifProperty> Members
+    }
 }
