@@ -92,7 +92,7 @@ namespace ExifUtils {
             this.denominator = denominator;
 
             if (reduce) {
-                Rational<T>.Reduce(ref this.numerator, ref this.denominator);
+                Reduce(ref this.numerator, ref this.denominator);
             }
         }
 
@@ -120,7 +120,7 @@ namespace ExifUtils {
         /// </summary>
         private static decimal MaxValue {
             get {
-                if (Rational<T>.maxValue == default(decimal)) {
+                if (maxValue == default) {
                     var maxValue = typeof(T).GetField("MaxValue", BindingFlags.Static | BindingFlags.Public);
                     if (maxValue != null) {
                         try {
@@ -149,7 +149,7 @@ namespace ExifUtils {
         /// <remarks>
         /// http://stackoverflow.com/questions/95727
         /// </remarks>
-        public static Rational<T> Approximate(decimal value) => Rational<T>.Approximate(value, 0.000001m);
+        public static Rational<T> Approximate(decimal value) => Approximate(value, 0.000001m);
 
         /// <summary>
         /// Approximate the decimal value accurate to a certain precision
@@ -164,7 +164,7 @@ namespace ExifUtils {
             var numerator = decimal.Truncate(value);
             var denominator = decimal.One;
             var fraction = decimal.Divide(numerator, denominator);
-            var maxValue = Rational<T>.MaxValue;
+            var maxValue = MaxValue;
 
             while (Math.Abs(fraction - value) > epsilon && (denominator < maxValue) && (numerator < maxValue)) {
                 if (fraction < value) {
@@ -196,20 +196,20 @@ namespace ExifUtils {
         /// <returns></returns>
         public static Rational<T> Parse(string value) {
             if (string.IsNullOrEmpty(value)) {
-                return Rational<T>.Empty;
+                return Empty;
             }
 
-            if (Rational<T>.Parser == null) {
-                Rational<T>.Parser = Rational<T>.BuildParser();
+            if (Parser == null) {
+                Parser = BuildParser();
             }
 
-            var parts = value.Split(Rational<T>.DelimSet, 2, StringSplitOptions.RemoveEmptyEntries);
-            var numerator = Rational<T>.Parser(parts[0]);
+            var parts = value.Split(DelimSet, 2, StringSplitOptions.RemoveEmptyEntries);
+            var numerator = Parser(parts[0]);
             T denominator;
             if (parts.Length > 1) {
-                denominator = Rational<T>.Parser(parts[1]);
+                denominator = Parser(parts[1]);
             } else {
-                denominator = default(T);
+                denominator = default;
             }
 
             return new Rational<T>(numerator, denominator);
@@ -224,27 +224,27 @@ namespace ExifUtils {
         /// <returns></returns>
         public static bool TryParse(string value, out Rational<T> rational) {
             if (string.IsNullOrEmpty(value)) {
-                rational = Rational<T>.Empty;
+                rational = Empty;
                 return false;
             }
 
-            if (Rational<T>.TryParser == null) {
-                Rational<T>.TryParser = Rational<T>.BuildTryParser();
+            if (TryParser == null) {
+                TryParser = BuildTryParser();
             }
 
             T denominator;
-            var parts = value.Split(Rational<T>.DelimSet, 2, StringSplitOptions.RemoveEmptyEntries);
-            if (!Rational<T>.TryParser(parts[0], out var numerator)) {
-                rational = Rational<T>.Empty;
+            var parts = value.Split(DelimSet, 2, StringSplitOptions.RemoveEmptyEntries);
+            if (!TryParser(parts[0], out var numerator)) {
+                rational = Empty;
                 return false;
             }
             if (parts.Length > 1) {
-                if (!Rational<T>.TryParser(parts[1], out denominator)) {
-                    rational = Rational<T>.Empty;
+                if (!TryParser(parts[1], out denominator)) {
+                    rational = Empty;
                     return false;
                 }
             } else {
-                denominator = default(T);
+                denominator = default;
             }
 
             rational = new Rational<T>(numerator, denominator);
@@ -318,7 +318,7 @@ namespace ExifUtils {
             var numerator = this.numerator;
             var denominator = this.denominator;
 
-            Rational<T>.Reduce(ref numerator, ref denominator);
+            Reduce(ref numerator, ref denominator);
 
             return new Rational<T>(numerator, denominator);
         }
@@ -365,7 +365,7 @@ namespace ExifUtils {
                 return decimal.Zero;
             }
 
-            return (a * b) / Rational<T>.GCD(a, b);
+            return (a * b) / GCD(a, b);
         }
 
         /// <summary>
@@ -410,7 +410,7 @@ namespace ExifUtils {
         /// <returns></returns>
         public string ToString(IFormatProvider provider) => string.Concat(
                 numerator.ToString(provider),
-                Rational<T>.Delim,
+                Delim,
                 denominator.ToString(provider));
 
         /// <summary>
@@ -584,7 +584,7 @@ namespace ExifUtils {
             var n2 = Convert.ToDecimal(r2.numerator);
             var d2 = Convert.ToDecimal(r2.denominator);
 
-            var denominator = Rational<T>.LCD(d1, d2);
+            var denominator = LCD(d1, d2);
             if (denominator > d1) {
                 n1 *= (denominator / d1);
             }

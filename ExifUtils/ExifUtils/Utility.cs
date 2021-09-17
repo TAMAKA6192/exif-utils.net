@@ -69,7 +69,7 @@ namespace ExifUtils {
         /// <returns>list of flag enums</returns>
         public static Enum[] GetFlagList(Type enumType, object value) {
             var longVal = Convert.ToUInt64(value);
-            var enumNames = Enum.GetNames(enumType);
+            _ = Enum.GetNames(enumType);
             var enumValues = Enum.GetValues(enumType);
 
             var enums = new List<Enum>(enumValues.Length);
@@ -152,7 +152,7 @@ namespace ExifUtils {
 
             var attribute =
                 Utility.GetAttribute(value, typeof(DescriptionAttribute), false) as DescriptionAttribute;
-            return (attribute != null) ? attribute.Description : null;
+            return attribute?.Description;
         }
 
         /// <summary>
