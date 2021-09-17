@@ -1,40 +1,40 @@
-#region License
-/*---------------------------------------------------------------------------------*\
-
-	Distributed under the terms of an MIT-style license:
-
-	The MIT License
-
-	Copyright (c) 2005-2009 Stephen M. McKamey
-
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
-
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
-
-\*---------------------------------------------------------------------------------*/
-#endregion License
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection;
-using System.Text;
-
 namespace ExifUtils {
+    #region License
+    /*---------------------------------------------------------------------------------*\
+
+        Distributed under the terms of an MIT-style license:
+
+        The MIT License
+
+        Copyright (c) 2005-2009 Stephen M. McKamey
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+
+        The above copyright notice and this permission notice shall be included in
+        all copies or substantial portions of the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+        THE SOFTWARE.
+
+    \*---------------------------------------------------------------------------------*/
+    #endregion License
+
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Reflection;
+    using System.Text;
+
     /// <summary>
     /// Internal Utility Class
     /// </summary>
@@ -57,8 +57,8 @@ namespace ExifUtils {
                 return false;
             }
 
-            var flags = Utility.GetAttribute(type, typeof(FlagsAttribute), true);
-            return (flags != null);
+            var flags = GetAttribute(type, typeof(FlagsAttribute), true);
+            return flags != null;
         }
 
         /// <summary>
@@ -127,13 +127,17 @@ namespace ExifUtils {
 
             object[] array;
 
-            if (value is Type) {
+            switch (value) {
+            case Type _:
                 array = (value as Type).GetCustomAttributes(attributeType, inherit);
-            } else if (value is MemberInfo) {
+                break;
+            case MemberInfo _:
                 array = (value as MemberInfo).GetCustomAttributes(attributeType, inherit);
-            } else if (value is Enum) {
+                break;
+            case Enum _:
                 array = value.GetType().GetField(value.ToString()).GetCustomAttributes(attributeType, inherit);
-            } else {
+                break;
+            default:
                 throw new NotSupportedException("object doesn't support attributes.");
             }
 
@@ -150,8 +154,7 @@ namespace ExifUtils {
                 return null;
             }
 
-            var attribute =
-                Utility.GetAttribute(value, typeof(DescriptionAttribute), false) as DescriptionAttribute;
+            var attribute = GetAttribute(value, typeof(DescriptionAttribute), false) as DescriptionAttribute;
             return attribute?.Description;
         }
 
@@ -161,15 +164,15 @@ namespace ExifUtils {
         /// <param name="value"></param>
         /// <returns></returns>
         public static string GetDescription(Enum value) {
-            if (!Utility.IsFlagsEnum(value.GetType())) {
-                return Utility.GetDescription((object)value);
+            if (!IsFlagsEnum(value.GetType())) {
+                return GetDescription((object)value);
             }
 
-            var enumValues = Utility.GetFlagList(value.GetType(), value);
+            var enumValues = GetFlagList(value.GetType(), value);
             var builder = new StringBuilder();
 
             for (var i = 0; i < enumValues.Length; i++) {
-                builder.Append(Utility.GetDescription(enumValues[i] as object));
+                _ = builder.Append(GetDescription(enumValues[i] as object));
 
                 if (i != enumValues.Length - 1) {
                     builder.Append(FlagsDelim);
